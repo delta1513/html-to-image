@@ -16,11 +16,37 @@ const robotoBold = fs.readFileSync(
   path.join(__dirname, "fonts", "Roboto-Bold.ttf")
 );
 
+// In-memory cache for fetched emoji SVGs
+const emojiCache = new Map();
+
+async function loadEmoji(code) {
+  // Convert emoji to its Twemoji filename (hyphen-separated codepoints, no fe0f)
+  const codepoints = [...code]
+    .map((c) => c.codePointAt(0).toString(16))
+    .filter((c) => c !== "fe0f")
+    .join("-");
+
+  if (emojiCache.has(codepoints)) return emojiCache.get(codepoints);
+
+  const url = `https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/${codepoints}.svg`;
+  const res = await fetch(url);
+  if (!res.ok) return undefined;
+  const svg = await res.text();
+  const dataUri = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+  emojiCache.set(codepoints, dataUri);
+  return dataUri;
+}
+
 const satoriConfig = () => ({
   fonts: [
     { name: "Roboto", data: robotoRegular, weight: 400, style: "normal" },
     { name: "Roboto", data: robotoBold, weight: 700, style: "normal" },
   ],
+  loadAdditionalAsset: async (languageCode, segment) => {
+    if (languageCode === "emoji") {
+      return loadEmoji(segment);
+    }
+  },
 });
 
 function renderPng(svg, width) {
