@@ -12,7 +12,7 @@ const robotoFont = fs.readFileSync(
   path.join(__dirname, "fonts", "Roboto-Regular.ttf")
 );
 
-const satoriConfig = (width) => ({
+const satoriConfig = () => ({
   fonts: [
     {
       name: "Roboto",
@@ -39,10 +39,12 @@ app.get("/image", async (req, res) => {
     bg = "#1e293b",
     color = "#f8fafc",
     fontSize: fs = "48",
+    scale: s = "3",
   } = req.query;
 
   const width = parseInt(w, 10);
   const height = parseInt(h, 10);
+  const scale = Math.min(Math.max(parseInt(s, 10) || 3, 1), 5);
 
   const element = {
     type: "div",
@@ -55,9 +57,9 @@ app.get("/image", async (req, res) => {
         height: "100%",
         backgroundColor: bg,
         color,
-        fontSize: `${fs}px`,
+        fontSize: `${fs * scale}px`,
         fontFamily: "Roboto",
-        padding: "40px",
+        padding: `${40 * scale}px`,
         textAlign: "center",
         wordBreak: "break-word",
       },
@@ -66,8 +68,8 @@ app.get("/image", async (req, res) => {
   };
 
   try {
-    const svg = await satori(element, { width, height, ...satoriConfig(width) });
-    const pngBuffer = renderPng(svg, width);
+    const svg = await satori(element, { width: width * scale, height: height * scale, ...satoriConfig() });
+    const pngBuffer = renderPng(svg, width * scale);
 
     res.setHeader("Content-Type", "image/png");
     res.setHeader("Cache-Control", "public, max-age=86400");
@@ -80,7 +82,7 @@ app.get("/image", async (req, res) => {
 
 // Fetch a URL and render its HTML as an image
 app.get("/render", async (req, res) => {
-  const { url, width: w = "800", height: h = "400" } = req.query;
+  const { url, width: w = "800", height: h = "400", scale: s = "3" } = req.query;
 
   if (!url) {
     return res.status(400).json({ error: "Missing required 'url' query parameter" });
@@ -88,6 +90,7 @@ app.get("/render", async (req, res) => {
 
   const width = parseInt(w, 10);
   const height = parseInt(h, 10);
+  const scale = Math.min(Math.max(parseInt(s, 10) || 3, 1), 5);
 
   try {
     const response = await fetch(url);
@@ -100,8 +103,8 @@ app.get("/render", async (req, res) => {
     // Inject Roboto as the default font family on the root element
     element.props.style.fontFamily = element.props.style.fontFamily || "Roboto";
 
-    const svg = await satori(element, { width, height, ...satoriConfig(width) });
-    const pngBuffer = renderPng(svg, width);
+    const svg = await satori(element, { width: width * scale, height: height * scale, ...satoriConfig() });
+    const pngBuffer = renderPng(svg, width * scale);
 
     res.setHeader("Content-Type", "image/png");
     res.setHeader("Cache-Control", "public, max-age=86400");
