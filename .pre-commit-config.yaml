@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: npm-test
+        name: Run test suite (vitest)
+        language: system
+        entry: npm test
+        pass_filenames: false
+        always_run: true
