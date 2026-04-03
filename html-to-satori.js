@@ -188,6 +188,13 @@ function htmlToSatori(html) {
     if (converted !== null) children.push(converted);
   }
 
+  // Apply body/html styles to the root wrapper
+  let bodyStyle = {};
+  const bodyEl = root.querySelector("body");
+  const htmlEl = root.querySelector("html");
+  if (htmlEl) bodyStyle = { ...bodyStyle, ...computeStyle(htmlEl, rules) };
+  if (bodyEl) bodyStyle = { ...bodyStyle, ...computeStyle(bodyEl, rules) };
+
   // Wrap everything in a root flex container
   return {
     type: "div",
@@ -197,6 +204,7 @@ function htmlToSatori(html) {
         flexDirection: "column",
         width: "100%",
         height: "100%",
+        ...bodyStyle,
       },
       children: children.length === 1 ? children[0] : children,
     },
