@@ -31,11 +31,28 @@ http://localhost:3000/image?text=Hello+World
 http://localhost:3000/image?text=Custom+Title&bg=%23059669&fontSize=64
 ```
 
+### `GET /render`
+
+Fetches HTML from a URL and renders it as a PNG image.
+
+| Parameter | Default | Description           |
+|-----------|---------|-----------------------|
+| `url`     | —       | **(required)** URL to fetch HTML from |
+| `width`   | 800     | Image width in pixels |
+| `height`  | 400     | Image height in pixels |
+
+The HTML can use inline styles and `<style>` tags with element, class, and ID selectors. Satori supports a subset of CSS (flexbox, colors, typography, borders, etc.) so keep your HTML simple.
+
+```
+http://localhost:3000/render?url=https://example.com/card.html&width=600&height=300
+```
+
 ### Embed in Markdown
 
 ```markdown
 ![My Image](http://localhost:3000/image?text=Hello+World)
 ![Green Banner](http://localhost:3000/image?text=Status:+OK&bg=%23059669&width=600&height=200)
+![From URL](http://localhost:3000/render?url=https://example.com/card.html&width=600&height=300)
 ```
 
 ## Fonts

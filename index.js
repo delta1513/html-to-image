@@ -3,6 +3,7 @@ const satori = require("satori").default;
 const { Resvg } = require("@resvg/resvg-js");
 const fs = require("fs");
 const path = require("path");
+const { htmlToSatori } = require("./html-to-satori");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,6 +12,25 @@ const robotoFont = fs.readFileSync(
   path.join(__dirname, "fonts", "Roboto-Regular.ttf")
 );
 
+const satoriConfig = (width) => ({
+  fonts: [
+    {
+      name: "Roboto",
+      data: robotoFont,
+      weight: 400,
+      style: "normal",
+    },
+  ],
+});
+
+function renderPng(svg, width) {
+  const resvg = new Resvg(svg, {
+    fitTo: { mode: "width", value: width },
+  });
+  return resvg.render().asPng();
+}
+
+// Render text as an image
 app.get("/image", async (req, res) => {
   const {
     text = "Hello World",
@@ -46,23 +66,8 @@ app.get("/image", async (req, res) => {
   };
 
   try {
-    const svg = await satori(element, {
-      width,
-      height,
-      fonts: [
-        {
-          name: "Roboto",
-          data: robotoFont,
-          weight: 400,
-          style: "normal",
-        },
-      ],
-    });
-
-    const resvg = new Resvg(svg, {
-      fitTo: { mode: "width", value: width },
-    });
-    const pngBuffer = resvg.render().asPng();
+    const svg = await satori(element, { width, height, ...satoriConfig(width) });
+    const pngBuffer = renderPng(svg, width);
 
     res.setHeader("Content-Type", "image/png");
     res.setHeader("Cache-Control", "public, max-age=86400");
@@ -70,6 +75,40 @@ app.get("/image", async (req, res) => {
   } catch (err) {
     console.error("Image generation failed:", err);
     res.status(500).json({ error: "Image generation failed" });
+  }
+});
+
+// Fetch a URL and render its HTML as an image
+app.get("/render", async (req, res) => {
+  const { url, width: w = "800", height: h = "400" } = req.query;
+
+  if (!url) {
+    return res.status(400).json({ error: "Missing required 'url' query parameter" });
+  }
+
+  const width = parseInt(w, 10);
+  const height = parseInt(h, 10);
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      return res.status(502).json({ error: `Failed to fetch URL: ${response.status}` });
+    }
+    const html = await response.text();
+    const element = htmlToSatori(html);
+
+    // Inject Roboto as the default font family on the root element
+    element.props.style.fontFamily = element.props.style.fontFamily || "Roboto";
+
+    const svg = await satori(element, { width, height, ...satoriConfig(width) });
+    const pngBuffer = renderPng(svg, width);
+
+    res.setHeader("Content-Type", "image/png");
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.send(pngBuffer);
+  } catch (err) {
+    console.error("Render failed:", err);
+    res.status(500).json({ error: "Render failed", details: err.message });
   }
 });
 
