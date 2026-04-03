@@ -154,3 +154,7 @@ http://localhost:3000/template?template=https://example.com/card.njk&title=Hello
 ## Fonts
 
 The service loads `fonts/Roboto-Regular.ttf` at startup. To use a different font, replace that file with any `.ttf` font and update the font name in `index.js`.
+
+---
+
+![](https://html-to-image-eta.vercel.app/template?template=https://gitlab.com/delta1512/deltadelta.dev/-/raw/main/badges/ai-transparency.njk&width=350&height=225&scale=4&c1=Code&l1=ai&c2=This+README&l2=ai&c3=This+Badge&l3=ai)
