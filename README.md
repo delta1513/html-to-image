@@ -13,24 +13,6 @@ The server starts on `http://localhost:3000` (override with `PORT` env var).
 
 ## API
 
-### `GET /image`
-
-| Parameter  | Default     | Description                |
-|------------|-------------|----------------------------|
-| `text`     | Hello World | Text to render             |
-| `width`    | 800         | Image width in pixels      |
-| `height`   | 400         | Image height in pixels     |
-| `bg`       | #1e293b     | Background color           |
-| `color`    | #f8fafc     | Text color                 |
-| `fontSize` | 48          | Font size in pixels        |
-
-### Examples
-
-```
-http://localhost:3000/image?text=Hello+World
-http://localhost:3000/image?text=Custom+Title&bg=%23059669&fontSize=64
-```
-
 ### `GET /render`
 
 Fetches HTML from a URL and renders it as a PNG image.
@@ -110,8 +92,6 @@ Your CSS overrides these defaults.
 ### Embed in Markdown
 
 ```markdown
-![My Image](http://localhost:3000/image?text=Hello+World)
-![Green Banner](http://localhost:3000/image?text=Status:+OK&bg=%23059669&width=600&height=200)
 ![From URL](http://localhost:3000/render?url=https://example.com/card.html&width=600&height=300)
 ```
 
