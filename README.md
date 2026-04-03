@@ -95,6 +95,62 @@ Your CSS overrides these defaults.
 ![From URL](http://localhost:3000/render?url=https://example.com/card.html&width=600&height=300)
 ```
 
+---
+
+### `GET /template`
+
+Fetches a [Nunjucks](https://mozilla.github.io/nunjucks/) (`.njk`) template from a URL, renders it to HTML using the remaining query parameters as template variables, then converts the result to a PNG via the same pipeline as `/render`.
+
+| Parameter  | Default | Description |
+|------------|---------|-------------|
+| `template` | —       | **(required)** URL to a `.njk` template file |
+| `width`    | 800     | Image width in pixels |
+| `height`   | 400     | Image height in pixels |
+| `scale`    | 3       | Pixel-density multiplier (1–5) |
+| *(any other param)* | — | Passed as a template variable |
+
+```
+http://localhost:3000/template?template=https://example.com/card.njk&name=Alice&score=42&width=600&height=300
+```
+
+#### Template syntax
+
+Templates are rendered with full Nunjucks / Jinja2 syntax:
+
+- Variable interpolation: `{{ variable }}`
+- Conditionals: `{% if condition %}...{% endif %}`
+- Loops: `{% for item in list %}...{% endfor %}`
+- Filters: `{{ name | upper }}`, `{{ score | default(0) }}`
+
+All HTML requirements and constraints from `/render` apply to the rendered output (element mapping, CSS support, etc.).
+
+#### Example template
+
+```html
+<!-- card.njk -->
+<div style="font-family: Roboto; padding: 32px; background: #1e1e2e; color: #cdd6f4; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+  <h1 style="margin: 0 0 8px; font-size: 28px; color: #cba6f7;">{{ title }}</h1>
+  <p style="margin: 0 0 16px; font-size: 16px; color: #a6adc8;">{{ subtitle }}</p>
+  {% if badge %}
+  <span style="align-self: flex-start; background: #cba6f7; color: #1e1e2e; padding: 4px 12px; border-radius: 99px; font-size: 13px; font-weight: 700;">
+    {{ badge }}
+  </span>
+  {% endif %}
+</div>
+```
+
+Rendered with:
+
+```
+http://localhost:3000/template?template=https://example.com/card.njk&title=Hello+World&subtitle=Generated+with+html-to-image&badge=NEW
+```
+
+#### Embed in Markdown
+
+```markdown
+![Card](http://localhost:3000/template?template=https://example.com/card.njk&title=Hello+World&subtitle=Generated+with+html-to-image&badge=NEW&width=600&height=300)
+```
+
 ## Fonts
 
 The service loads `fonts/Roboto-Regular.ttf` at startup. To use a different font, replace that file with any `.ttf` font and update the font name in `index.js`.
