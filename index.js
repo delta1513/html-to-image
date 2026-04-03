@@ -8,18 +8,17 @@ const { htmlToSatori } = require("./html-to-satori");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const robotoFont = fs.readFileSync(
+const robotoRegular = fs.readFileSync(
   path.join(__dirname, "fonts", "Roboto-Regular.ttf")
+);
+const robotoBold = fs.readFileSync(
+  path.join(__dirname, "fonts", "Roboto-Bold.ttf")
 );
 
 const satoriConfig = () => ({
   fonts: [
-    {
-      name: "Roboto",
-      data: robotoFont,
-      weight: 400,
-      style: "normal",
-    },
+    { name: "Roboto", data: robotoRegular, weight: 400, style: "normal" },
+    { name: "Roboto", data: robotoBold, weight: 700, style: "normal" },
   ],
 });
 
@@ -38,7 +37,7 @@ app.get("/image", async (req, res) => {
     height: h = "400",
     bg = "#1e293b",
     color = "#f8fafc",
-    fontSize: fs = "48",
+    fontSize: fontSizeParam = "48",
     scale: s = "3",
   } = req.query;
 
@@ -57,7 +56,7 @@ app.get("/image", async (req, res) => {
         height: "100%",
         backgroundColor: bg,
         color,
-        fontSize: `${fs * scale}px`,
+        fontSize: `${fontSizeParam * scale}px`,
         fontFamily: "Roboto",
         padding: `${40 * scale}px`,
         textAlign: "center",
