@@ -4,6 +4,7 @@ const { Resvg } = require("@resvg/resvg-js");
 const fs = require("fs");
 const path = require("path");
 const { htmlToSatori } = require("./html-to-satori");
+const nunjucks = require("nunjucks");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -61,6 +62,41 @@ app.get("/render", async (req, res) => {
   } catch (err) {
     console.error("Render failed:", err);
     res.status(500).json({ error: "Render failed", details: err.message });
+  }
+});
+
+// Fetch a Nunjucks template from a URL, render with query params, then convert to PNG
+app.get("/template", async (req, res) => {
+  const { template, width: w = "800", height: h = "400", scale: s = "3", ...vars } = req.query;
+
+  if (!template) {
+    return res.status(400).json({ error: "Missing required 'template' query parameter" });
+  }
+
+  const width = parseInt(w, 10);
+  const height = parseInt(h, 10);
+  const scale = Math.min(Math.max(parseInt(s, 10) || 3, 1), 5);
+
+  try {
+    const response = await fetch(template);
+    if (!response.ok) {
+      return res.status(502).json({ error: `Failed to fetch template: ${response.status}` });
+    }
+    const templateStr = await response.text();
+    const html = nunjucks.renderString(templateStr, vars);
+    const element = htmlToSatori(html);
+
+    element.props.style.fontFamily = element.props.style.fontFamily || "Roboto";
+
+    const svg = await satori(element, { width: width * scale, height: height * scale, ...satoriConfig() });
+    const pngBuffer = renderPng(svg, width);
+
+    res.setHeader("Content-Type", "image/png");
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.send(pngBuffer);
+  } catch (err) {
+    console.error("Template render failed:", err);
+    res.status(500).json({ error: "Template render failed", details: err.message });
   }
 });
 
