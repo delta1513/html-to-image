@@ -69,7 +69,7 @@ app.get("/image", async (req, res) => {
 
   try {
     const svg = await satori(element, { width: width * scale, height: height * scale, ...satoriConfig() });
-    const pngBuffer = renderPng(svg, width * scale);
+    const pngBuffer = renderPng(svg, width);
 
     res.setHeader("Content-Type", "image/png");
     res.setHeader("Cache-Control", "public, max-age=86400");
@@ -104,7 +104,7 @@ app.get("/render", async (req, res) => {
     element.props.style.fontFamily = element.props.style.fontFamily || "Roboto";
 
     const svg = await satori(element, { width: width * scale, height: height * scale, ...satoriConfig() });
-    const pngBuffer = renderPng(svg, width * scale);
+    const pngBuffer = renderPng(svg, width);
 
     res.setHeader("Content-Type", "image/png");
     res.setHeader("Cache-Control", "public, max-age=86400");
